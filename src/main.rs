@@ -1,21 +1,16 @@
 extern crate getopts;
 use getopts::Options;
 use std::env;
+use std::process;
 
 extern crate port_scanner;
+use port_scanner::scanner::*;
 
-const MIN_PORT: i32 = 0;
-const MAX_PORT: i32 = 1024;
-//const MaxPort: i32 = 65535;
 
 fn print_usage(program: &str, opts: Options) {
     let brief = format!("Usage: {} ip_address", program);
     print!("{}", opts.usage(&brief));
 }
-
-
-
-
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -29,7 +24,7 @@ fn main() {
     };
     if matches.opt_present("h") {
         print_usage(&program, opts);
-        return
+        process::exit(1)
     }
 
     let ip_address = if !matches.free.is_empty() {
@@ -39,8 +34,13 @@ fn main() {
         return;
     };
 
-    match port_scanner::scanner::parse_ipv4(&ip_address) {
-        Ok(x) => println!("{}", x),
-        Err(err) => println!("{}", err),
+    match parse_ipv4(&ip_address) {
+        Ok(ipv4) => {
+            println!("Scanning {}", ipv4);
+            scan_ports(ipv4)
+        }
+        Err(err) => {
+            println!("{}", err);
+        }
     };
 }
