@@ -10,13 +10,19 @@ fn print_usage(program: &str, opts: Options) {
 
 fn parse_ipv4(ip: &str)  -> Result<Ipv4Addr, &'static str> {
    let split_ip: Vec<&str> = ip.split(".").collect();
-   if split_ip.len() == 4 {
-       //match Ipv4Addr::new(split_ip[0], split_ip[1], split_ip[2], split_ip[3]) {
-       print!("works?");
-   } else {
-       Err("Invalid ip address spec");
+
+   match split_ip.len() {
+       4 => {
+           let converted_ip_octets = split_ip.iter().map(|x| x.parse::<u8>().unwrap())
+               .collect::<Vec<u8>>();
+           let parsed_ip = Ipv4Addr::new(converted_ip_octets[0],
+                                         converted_ip_octets[1],
+                                         converted_ip_octets[2],
+                                         converted_ip_octets[3]);
+           return Ok(parsed_ip);
+       },
+       _ => { return Err("Invalid ip address spec, must only have 4 octets") },
    }
-   Ok(Ipv4Addr::new(1,2,3,4));
 }
 
 fn main() {
@@ -41,5 +47,9 @@ fn main() {
         return;
     };
 
-    print!("{}", ip_address);
+    match parse_ipv4(&ip_address) {
+        Ok(x) => println!("{}", x),
+        Err(err) => println!("{}", err),
+    };
+
 }
